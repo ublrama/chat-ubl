@@ -3,23 +3,25 @@ import logging
 import os
 import re
 from parser import langchain_docs_extractor
-
+from dotenv import load_dotenv, find_dotenv
 import weaviate
 from bs4 import BeautifulSoup, SoupStrainer
 from langchain.document_loaders import RecursiveUrlLoader, SitemapLoader
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.indexes import SQLRecordManager, index
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.utils.html import PREFIXES_TO_IGNORE_REGEX, SUFFIXES_TO_IGNORE_REGEX
+from langchain.utils.html import (PREFIXES_TO_IGNORE_REGEX,
+                                  SUFFIXES_TO_IGNORE_REGEX)
 from langchain.vectorstores import Weaviate
 
 from constants import WEAVIATE_DOCS_INDEX_NAME
 
 logger = logging.getLogger(__name__)
 
-WEAVIATE_URL = os.environ["WEAVIATE_URL"]
-WEAVIATE_API_KEY = os.environ["WEAVIATE_API_KEY"]
-RECORD_MANAGER_DB_URL = os.environ["RECORD_MANAGER_DB_URL"]
+load_dotenv()
+WEAVIATE_URL = os.getenv("WEAVIATE_HOST")
+WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
+RECORD_MANAGER_DB_URL = os.getenv("RECORD_MANAGER_DB_URL")
 
 
 def metadata_extractor(meta: dict, soup: BeautifulSoup) -> dict:
@@ -51,15 +53,15 @@ def load_langchain_docs():
 
 
 def simple_extractor(html: str) -> str:
-    soup = BeautifulSoup(html, "lxml")
+    soup = BeautifulSoup(html, "html.parser")
     return re.sub(r"\n\n+", "\n\n", soup.text).strip()
 
 
 def load_api_docs():
     return RecursiveUrlLoader(
-        url="https://api.python.langchain.com/en/latest/",
-        max_depth=8,
-        extractor=simple_extractor,
+        url="https://www.library.universiteitleiden.nl/about-us/centre-for-digital-scholarship",
+        max_depth=2,
+        extractor=lambda x: BeautifulSoup(x, "html.parser").text,
         prevent_outside=True,
         use_async=True,
         timeout=600,
@@ -69,22 +71,25 @@ def load_api_docs():
             r"(?:[\#'\"]|\/[\#'\"])"
         ),
         check_response_status=True,
-        exclude_dirs=(
-            "https://api.python.langchain.com/en/latest/_sources",
-            "https://api.python.langchain.com/en/latest/_modules",
-        ),
+        # exclude_dirs=(
+        #     "https://api.python.langchain.com/en/latest/_sources",
+        #     "https://api.python.langchain.com/en/latest/_modules",
+        # ),
     ).load()
 
 
 def ingest_docs():
-    docs_from_documentation = load_langchain_docs()
-    logger.info(f"Loaded {len(docs_from_documentation)} docs from documentation")
+    # docs_from_documentation = load_langchain_docs()
+    # logger.info(f"Loaded {len(docs_from_documentation)} docs from documentation")
     docs_from_api = load_api_docs()
+
+
+    print(len(docs_from_api))
     logger.info(f"Loaded {len(docs_from_api)} docs from API")
 
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=4000, chunk_overlap=200)
     docs_transformed = text_splitter.split_documents(
-        docs_from_documentation + docs_from_api
+        docs_from_api
     )
 
     # We try to return 'source' and 'title' metadata when querying vector store and
@@ -100,6 +105,26 @@ def ingest_docs():
         url=WEAVIATE_URL,
         auth_client_secret=weaviate.AuthApiKey(api_key=WEAVIATE_API_KEY),
     )
+    # class_obj = {
+    #     "class": WEAVIATE_DOCS_INDEX_NAME,
+    #     "vectorizer": "text2vec-transformers",
+    #     "moduleConfig": {
+    #         "text2vec-transformers": {
+    #             "vectorizeClassName": "false"
+    #         }
+    #     },
+    # }
+    # try:
+    #     current_schemas = client.schema.get()['classes']
+    #     for schema in current_schemas:
+    #         if schema['class'] == WEAVIATE_DOCS_INDEX_NAME:
+    #             client.schema.delete_class(WEAVIATE_DOCS_INDEX_NAME)
+    #     client.schema.create_class(class_obj)
+    #     print(f"Schema {WEAVIATE_DOCS_INDEX_NAME} defined")
+    # except Exception as e:
+    #     print(e)
+    #     print(f"Schema {WEAVIATE_DOCS_INDEX_NAME}  already defined, skipping...")
+
     embedding = OpenAIEmbeddings(
         chunk_size=200,
     )  # rate limit
@@ -124,6 +149,8 @@ def ingest_docs():
         cleanup="full",
         source_id_key="source",
     )
+    count = client.query.aggregate(WEAVIATE_DOCS_INDEX_NAME).with_meta_count().do()
+    print(f"LangChain now has this many vectors: {count}")
 
     logger.info("Indexing stats: ", indexing_stats)
     logger.info(

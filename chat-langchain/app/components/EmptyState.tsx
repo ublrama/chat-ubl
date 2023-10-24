@@ -47,7 +47,7 @@ export function EmptyState(props: { onChoice: (question: string) => any }) {
               color={"gray.200"}
               textAlign={"center"}
             >
-              How do I use a RecursiveUrlLoader to load content from a page?
+              What is Digital Scholarship?
             </Heading>
           </CardHeader>
         </Card>
@@ -68,7 +68,7 @@ export function EmptyState(props: { onChoice: (question: string) => any }) {
               color={"gray.200"}
               textAlign={"center"}
             >
-              What is LangChain Expression Language?
+
             </Heading>
           </CardHeader>
         </Card>
@@ -90,7 +90,7 @@ export function EmptyState(props: { onChoice: (question: string) => any }) {
               color={"gray.200"}
               textAlign={"center"}
             >
-              What are some ways of doing retrieval augmented generation?
+              Who is Dan Rudmann?
             </Heading>
           </CardHeader>
         </Card>
@@ -111,7 +111,7 @@ export function EmptyState(props: { onChoice: (question: string) => any }) {
               color={"gray.200"}
               textAlign={"center"}
             >
-              How do I run a model locally?
+              Where is the CDS located?
             </Heading>
           </CardHeader>
         </Card>

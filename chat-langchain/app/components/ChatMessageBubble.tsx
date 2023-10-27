@@ -311,55 +311,55 @@ export function ChatMessageBubble(props: {
         props.isMostRecent &&
         props.messageCompleted && (
           <HStack spacing={2}>
-            <Button
-              ref={upButtonRef}
-              size="sm"
-              variant="outline"
-              colorScheme={feedback === null ? "green" : "gray"}
-              onClick={() => {
-                if (feedback === null && props.message.runId) {
-                  sendUserFeedback(1, "user_score");
-                  animateButton("upButton");
-                  setFeedbackColor("border-4 border-green-300");
-                } else {
-                  toast.error("You have already provided your feedback.");
-                }
-              }}
-            >
-              👍
-            </Button>
-            <Button
-              ref={downButtonRef}
-              size="sm"
-              variant="outline"
-              colorScheme={feedback === null ? "red" : "gray"}
-              onClick={() => {
-                if (feedback === null && props.message.runId) {
-                  sendUserFeedback(0, "user_score");
-                  animateButton("downButton");
-                  setFeedbackColor("border-4 border-red-300");
-                } else {
-                  toast.error("You have already provided your feedback.");
-                }
-              }}
-            >
-              👎
-            </Button>
-            <Spacer />
-            <Button
-              size="sm"
-              variant="outline"
-              colorScheme={runId === null ? "blue" : "gray"}
-              onClick={(e) => {
-                e.preventDefault();
-                viewTrace();
-              }}
-              isLoading={traceIsLoading}
-              loadingText="🔄"
-              color="white"
-            >
-              🦜🛠️ View trace
-            </Button>
+            {/*<Button*/}
+            {/*  ref={upButtonRef}*/}
+            {/*  size="sm"*/}
+            {/*  variant="outline"*/}
+            {/*  colorScheme={feedback === null ? "green" : "gray"}*/}
+            {/*  onClick={() => {*/}
+            {/*    if (feedback === null && props.message.runId) {*/}
+            {/*      sendUserFeedback(1, "user_score");*/}
+            {/*      animateButton("upButton");*/}
+            {/*      setFeedbackColor("border-4 border-green-300");*/}
+            {/*    } else {*/}
+            {/*      toast.error("You have already provided your feedback.");*/}
+            {/*    }*/}
+            {/*  }}*/}
+            {/*>*/}
+            {/*  👍*/}
+            {/*</Button>*/}
+            {/*<Button*/}
+            {/*  ref={downButtonRef}*/}
+            {/*  size="sm"*/}
+            {/*  variant="outline"*/}
+            {/*  colorScheme={feedback === null ? "red" : "gray"}*/}
+            {/*  onClick={() => {*/}
+            {/*    if (feedback === null && props.message.runId) {*/}
+            {/*      sendUserFeedback(0, "user_score");*/}
+            {/*      animateButton("downButton");*/}
+            {/*      setFeedbackColor("border-4 border-red-300");*/}
+            {/*    } else {*/}
+            {/*      toast.error("You have already provided your feedback.");*/}
+            {/*    }*/}
+            {/*  }}*/}
+            {/*>*/}
+            {/*  👎*/}
+            {/*</Button>*/}
+            {/*<Spacer />*/}
+            {/*<Button*/}
+            {/*  size="sm"*/}
+            {/*  variant="outline"*/}
+            {/*  colorScheme={runId === null ? "blue" : "gray"}*/}
+            {/*  onClick={(e) => {*/}
+            {/*    e.preventDefault();*/}
+            {/*    viewTrace();*/}
+            {/*  }}*/}
+            {/*  isLoading={traceIsLoading}*/}
+            {/*  loadingText="🔄"*/}
+            {/*  color="white"*/}
+            {/*>*/}
+            {/*  🦜🛠️ View trace*/}
+            {/*</Button>*/}
           </HStack>
         )}
 

@@ -15,7 +15,7 @@ export function EmptyState(props: { onChoice: (question: string) => any }) {
   return (
     <div className="rounded flex flex-col items-center max-w-full md:p-8">
       <Heading fontSize="3xl" fontWeight={"medium"} mb={1} color={"white"}>
-        Chat LangChain 🦜🔗
+        Chatbot for CDS of the University Library Leiden
       </Heading>
       <Heading
         fontSize="xl"
@@ -25,9 +25,9 @@ export function EmptyState(props: { onChoice: (question: string) => any }) {
         marginTop={"10px"}
         textAlign={"center"}
       >
-        Ask me anything about LangChain&apos;s{" "}
-        <Link href="https://python.langchain.com/" color={"blue.200"}>
-          Python documentation!
+        Ask me anything about the &apos;s{" "}
+        <Link href="https://www.library.universiteitleiden.nl/about-us/centre-for-digital-scholarship" color={"blue.200"}>
+          Centre for Digital Scholarship
         </Link>
       </Heading>
       <Flex marginTop={"25px"} grow={1} maxWidth={"800px"} width={"100%"}>
@@ -68,7 +68,7 @@ export function EmptyState(props: { onChoice: (question: string) => any }) {
               color={"gray.200"}
               textAlign={"center"}
             >
-
+              What can researchers do at the CDS?
             </Heading>
           </CardHeader>
         </Card>

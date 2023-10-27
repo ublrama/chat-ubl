@@ -23,7 +23,7 @@ from langchain.vectorstores import Weaviate
 from langserve import add_routes
 from langsmith import Client
 from pydantic import BaseModel
-
+from langchain.vectorstores import Chroma
 from constants import WEAVIATE_DOCS_INDEX_NAME
 
 RESPONSE_TEMPLATE = """\
@@ -92,19 +92,10 @@ class ChatRequest(BaseModel):
 
 
 def get_retriever() -> BaseRetriever:
-    weaviate_client = weaviate.Client(
-        url=WEAVIATE_URL,
-        auth_client_secret=weaviate.AuthApiKey(api_key=WEAVIATE_API_KEY),
-    )
-    weaviate_client = Weaviate(
-        client=weaviate_client,
-        index_name=WEAVIATE_DOCS_INDEX_NAME,
-        text_key="text",
-        embedding=OpenAIEmbeddings(chunk_size=200),
-        by_text=False,
-        attributes=["source", "title"],
-    )
-    return weaviate_client.as_retriever(search_kwargs=dict(k=6))
+    # load from disk
+    chroma_client = Chroma(persist_directory="./chroma_db", embedding_function=OpenAIEmbeddings(chunk_size=200))
+
+    return chroma_client.as_retriever(search_kwargs=dict(k=6))
 
 
 def create_retriever_chain(

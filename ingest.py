@@ -13,7 +13,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.utils.html import (PREFIXES_TO_IGNORE_REGEX,
                                   SUFFIXES_TO_IGNORE_REGEX)
 from langchain.vectorstores import Weaviate
-
+from langchain.vectorstores import Chroma
+import pickle
 from constants import WEAVIATE_DOCS_INDEX_NAME
 
 logger = logging.getLogger(__name__)
@@ -92,7 +93,7 @@ def ingest_docs():
         docs_from_api
     )
 
-    # We try to return 'source' and 'title' metadata when querying vector store and
+    # We try to return 'source' and 'title' metadata when querying vctor store and
     # Weaviate will error at query time if one of the attributes is missing from a
     # retrieved document.
     for doc in docs_transformed:
@@ -101,44 +102,14 @@ def ingest_docs():
         if "title" not in doc.metadata:
             doc.metadata["title"] = ""
 
-    client = weaviate.Client(
-        url=WEAVIATE_URL,
-        auth_client_secret=weaviate.AuthApiKey(api_key=WEAVIATE_API_KEY),
-    )
-    # class_obj = {
-    #     "class": WEAVIATE_DOCS_INDEX_NAME,
-    #     "vectorizer": "text2vec-transformers",
-    #     "moduleConfig": {
-    #         "text2vec-transformers": {
-    #             "vectorizeClassName": "false"
-    #         }
-    #     },
-    # }
-    # try:
-    #     current_schemas = client.schema.get()['classes']
-    #     for schema in current_schemas:
-    #         if schema['class'] == WEAVIATE_DOCS_INDEX_NAME:
-    #             client.schema.delete_class(WEAVIATE_DOCS_INDEX_NAME)
-    #     client.schema.create_class(class_obj)
-    #     print(f"Schema {WEAVIATE_DOCS_INDEX_NAME} defined")
-    # except Exception as e:
-    #     print(e)
-    #     print(f"Schema {WEAVIATE_DOCS_INDEX_NAME}  already defined, skipping...")
-
     embedding = OpenAIEmbeddings(
         chunk_size=200,
-    )  # rate limit
-    vectorstore = Weaviate(
-        client=client,
-        index_name=WEAVIATE_DOCS_INDEX_NAME,
-        text_key="text",
-        embedding=embedding,
-        by_text=False,
-        attributes=["source", "title"],
     )
+    # load it into Chroma
+    vectorstore = Chroma.from_documents(docs_transformed, embedding,persist_directory="./chroma_db")
 
     record_manager = SQLRecordManager(
-        f"weaviate/{WEAVIATE_DOCS_INDEX_NAME}", db_url=RECORD_MANAGER_DB_URL
+        f"chroma/{WEAVIATE_DOCS_INDEX_NAME}", db_url=RECORD_MANAGER_DB_URL
     )
     record_manager.create_schema()
 
@@ -149,14 +120,11 @@ def ingest_docs():
         cleanup="full",
         source_id_key="source",
     )
-    count = client.query.aggregate(WEAVIATE_DOCS_INDEX_NAME).with_meta_count().do()
-    print(f"LangChain now has this many vectors: {count}")
+    # count = client.query.aggregate(WEAVIATE_DOCS_INDEX_NAME).with_meta_count().do()
+    print(f"LangChain now has this many vectors: {len(vectorstore.get()['documents'])}")
 
-    logger.info("Indexing stats: ", indexing_stats)
-    logger.info(
-        "LangChain now has this many vectors: ",
-        client.query.aggregate(WEAVIATE_DOCS_INDEX_NAME).with_meta_count().do(),
-    )
+    print(f"Indexing stats: {indexing_stats}")
+
 
 
 if __name__ == "__main__":

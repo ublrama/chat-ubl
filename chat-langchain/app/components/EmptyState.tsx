@@ -15,7 +15,7 @@ export function EmptyState(props: { onChoice: (question: string) => any }) {
   return (
     <div className="rounded flex flex-col items-center max-w-full md:p-8">
       <Heading fontSize="3xl" fontWeight={"medium"} mb={1} color={"white"}>
-        Chatbot for CDS of the University Library Leiden
+       CDS Chat boy
       </Heading>
       <Heading
         fontSize="xl"
@@ -25,7 +25,7 @@ export function EmptyState(props: { onChoice: (question: string) => any }) {
         marginTop={"10px"}
         textAlign={"center"}
       >
-        Ask me anything about the &apos;s{" "}
+        Ask me anything about the {" "}
         <Link href="https://www.library.universiteitleiden.nl/about-us/centre-for-digital-scholarship" color={"blue.200"}>
           Centre for Digital Scholarship
         </Link>
